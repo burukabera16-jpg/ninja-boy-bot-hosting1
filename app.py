@@ -20,6 +20,15 @@ db = SQLAlchemy(app)
 UPLOAD_DIR = os.path.join(os.getcwd(), "private_uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# Vercel Speed Insights script for client-side performance monitoring
+SPEED_INSIGHTS_SCRIPT = """
+    <!-- Vercel Speed Insights -->
+    <script type="module">
+      import { injectSpeedInsights } from 'https://cdn.jsdelivr.net/npm/@vercel/speed-insights@1/dist/index.mjs';
+      injectSpeedInsights();
+    </script>
+"""
+
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -169,9 +178,10 @@ def login():
             return redirect("/dashboard")
         return "Invalid login", 401
 
-    return render_template_string('''
+    return render_template_string(f'''
     <html>
     <head><title>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲 | Login</title>
+    {SPEED_INSIGHTS_SCRIPT}
     <style>
         body { margin:0; background:radial-gradient(circle at top,#0d1713,#060a08 58%); color:#eafef0; font-family:Arial,sans-serif; }
         .wrap { min-height:100vh; display:grid; place-items:center; }
@@ -224,9 +234,10 @@ def dashboard():
     script_count = ScriptFile.query.count()
     recent = bots[:5]
 
-    return render_template_string('''
+    return render_template_string(f'''
     <html>
     <head><title>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲 | Dashboard</title>
+    {SPEED_INSIGHTS_SCRIPT}
     <style>
       body { margin:0; background:radial-gradient(circle at top,#0d1713,#060a08 58%); color:#eafef0; font-family:Arial,sans-serif; }
       .layout { display:flex; min-height:100vh; }
@@ -265,17 +276,17 @@ def dashboard():
         <div class='topbar'>
           <div>
             <div style='color:#9bc7ae; letter-spacing:0.12em; text-transform:uppercase; font-size:0.72rem;'>Administrator</div>
-            <h2>{{ username }}</h2>
+            <h2>{{{{ username }}}}</h2>
           </div>
           <div class='status'>System Status: ONLINE</div>
         </div>
 
         <div class='cards'>
-          <div class='card'><div>Total Registered Bots</div><div class='big'>{{ total }}</div></div>
-          <div class='card'><div>Running Bots</div><div class='big'>{{ running }}</div></div>
-          <div class='card'><div>Stopped Bots</div><div class='big'>{{ stopped }}</div></div>
-          <div class='card'><div>Failed Bots</div><div class='big'>{{ failed }}</div></div>
-          <div class='card'><div>Total Uploaded Scripts</div><div class='big'>{{ script_count }}</div></div>
+          <div class='card'><div>Total Registered Bots</div><div class='big'>{{{{ total }}}}</div></div>
+          <div class='card'><div>Running Bots</div><div class='big'>{{{{ running }}}}</div></div>
+          <div class='card'><div>Stopped Bots</div><div class='big'>{{{{ stopped }}}}</div></div>
+          <div class='card'><div>Failed Bots</div><div class='big'>{{{{ failed }}}}</div></div>
+          <div class='card'><div>Total Uploaded Scripts</div><div class='big'>{{{{ script_count }}}}</div></div>
         </div>
 
         <div class='actions'>
@@ -290,13 +301,13 @@ def dashboard():
           <h3>Recent Bot Activity</h3>
           <table>
             <tr><th>Bot</th><th>Username</th><th>Status</th></tr>
-            {% for bot in recent %}
+            {{% for bot in recent %}}
             <tr>
-              <td>{{ bot.display_name }}</td>
-              <td>@{{ bot.username }}</td>
-              <td>{{ bot.status }}</td>
+              <td>{{{{ bot.display_name }}}}</td>
+              <td>@{{{{ bot.username }}}}</td>
+              <td>{{{{ bot.status }}}}</td>
             </tr>
-            {% endfor %}
+            {{% endfor %}}
           </table>
         </div>
       </main>
@@ -319,29 +330,30 @@ def bot_profile():
             profile = get_bot_profile(token)
             session["pending_bot"] = profile
             session["pending_token"] = token
-            return render_template_string('''
+            return render_template_string(f'''
             <html>
             <head><title>Telegram Bot Profile</title>
-            <style>body{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;} .wrap{padding:28px;} .card{background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(85,255,170,0.22);border-radius:18px;padding:20px;max-width:700px;margin:auto;} img{width:90px;height:90px;border-radius:50%;object-fit:cover;background:#0b100d;border:1px solid rgba(85,255,170,0.22);} .name{font-size:2rem;font-weight:bold;} .meta{color:#c4d7cb;} .row{display:flex;gap:18px;align-items:center;} .btn{padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,#39f7aa,#1ecb7e);color:#07140d;text-decoration:none;font-weight:bold;display:inline-block;margin-top:12px;} form{margin-top:18px;} input, textarea, select{width:100%;box-sizing:border-box;background:#0b100d;color:white;border:1px solid rgba(85,255,170,0.18);padding:12px;border-radius:10px;margin:8px 0;} button{padding:12px 18px;border:none;border-radius:10px;background:#2bf4a7;color:#06120d;font-weight:bold;}</style></head>
+            {SPEED_INSIGHTS_SCRIPT}
+            <style>body{{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;}} .wrap{padding:28px;} .card{background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(85,255,170,0.22);border-radius:18px;padding:20px;max-width:700px;margin:auto;} img{width:90px;height:90px;border-radius:50%;object-fit:cover;background:#0b100d;border:1px solid rgba(85,255,170,0.22);} .name{font-size:2rem;font-weight:bold;} .meta{color:#c4d7cb;} .row{display:flex;gap:18px;align-items:center;} .btn{padding:10px 14px;border-radius:10px;background:linear-gradient(135deg,#39f7aa,#1ecb7e);color:#07140d;text-decoration:none;font-weight:bold;display:inline-block;margin-top:12px;} form{margin-top:18px;} input, textarea, select{width:100%;box-sizing:border-box;background:#0b100d;color:white;border:1px solid rgba(85,255,170,0.18);padding:12px;border-radius:10px;margin:8px 0;} button{padding:12px 18px;border:none;border-radius:10px;background:#2bf4a7;color:#06120d;font-weight:bold;}</style></head>
             <body>
             <div class='wrap'>
               <div class='card'>
                 <div class='row'>
-                  {% if bot.profile_image_url %}
-                    <img src='{{ bot.profile_image_url }}'>
-                  {% else %}
-                    <img src='https://ui-avatars.com/api/?name={{ bot.first_name|urlencode }}&background=0d1a14&color=7dffc9&size=128'>
-                  {% endif %}
+                  {{% if bot.profile_image_url %}}
+                    <img src='{{{{ bot.profile_image_url }}}}'>
+                  {{% else %}}
+                    <img src='https://ui-avatars.com/api/?name={{{{ bot.first_name|urlencode }}}}&background=0d1a14&color=7dffc9&size=128'>
+                  {{% endif %}}
                   <div>
-                    <div class='name'>{{ bot.first_name or bot.username }}</div>
-                    <div class='meta'>@{{ bot.username }}</div>
-                    <div class='meta'>Telegram ID: {{ bot.id }}</div>
+                    <div class='name'>{{{{ bot.first_name or bot.username }}}}</div>
+                    <div class='meta'>@{{{{ bot.username }}}}</div>
+                    <div class='meta'>Telegram ID: {{{{ bot.id }}}}</div>
                   </div>
                 </div>
                 <div class='meta'>Verification: OK</div>
                 <form action='/bot-register' method='POST'>
-                  <input name='display_name' value='{{ bot.first_name or bot.username }}' required>
-                  <input name='username' value='{{ bot.username }}' required>
+                  <input name='display_name' value='{{{{ bot.first_name or bot.username }}}}' required>
+                  <input name='username' value='{{{{ bot.username }}}}' required>
                   <textarea name='description' placeholder='Optional description'></textarea>
                   <input name='worker_assignment' value='default'>
                   <select name='status'>
@@ -360,8 +372,8 @@ def bot_profile():
         except Exception as exc:
             return f"Invalid Telegram token or API error: {redact(str(exc))}", 400
 
-    return render_template_string('''
-    <html><head><title>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲 | Bot Profile</title><style>body{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ecffef;font-family:Arial,sans-serif;} .wrap{min-height:100vh;display:grid;place-items:center;} .card{background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(85,255,170,0.22);padding:24px;border-radius:18px;width:min(520px,90vw);box-shadow:0 0 24px rgba(53,255,152,0.1);} .brand{font-size:2rem;font-weight:800;color:#7afec0;letter-spacing:0.12em;text-transform:uppercase;} input,button{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid rgba(85,255,170,0.2);margin-top:10px;background:#0c120f;color:white;} button{background:linear-gradient(135deg,#35f8ab,#1bcf7e);color:#07140d;font-weight:bold;border:none;}</style></head><body><div class='wrap'><div class='card'><div class='brand'>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲</div><h2 style='margin-top:8px;'>Bot Profile Reader</h2><form method='POST'><input name='token' placeholder='Paste Telegram bot token' required><button type='submit'>Read Profile</button></form></div></div></body></html>
+    return render_template_string(f'''
+    <html><head><title>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲 | Bot Profile</title>{SPEED_INSIGHTS_SCRIPT}<style>body{{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ecffef;font-family:Arial,sans-serif;}} .wrap{min-height:100vh;display:grid;place-items:center;} .card{background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(85,255,170,0.22);padding:24px;border-radius:18px;width:min(520px,90vw);box-shadow:0 0 24px rgba(53,255,152,0.1);} .brand{font-size:2rem;font-weight:800;color:#7afec0;letter-spacing:0.12em;text-transform:uppercase;} input,button{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid rgba(85,255,170,0.2);margin-top:10px;background:#0c120f;color:white;} button{background:linear-gradient(135deg,#35f8ab,#1bcf7e);color:#07140d;font-weight:bold;border:none;}</style></head><body><div class='wrap'><div class='card'><div class='brand'>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲</div><h2 style='margin-top:8px;'>Bot Profile Reader</h2><form method='POST'><input name='token' placeholder='Paste Telegram bot token' required><button type='submit'>Read Profile</button></form></div></div></body></html>
     ''')
 
 
@@ -415,8 +427,8 @@ def bots():
     if not require_login():
         return redirect("/login")
     bot_list = Bot.query.order_by(Bot.created_at.desc()).all()
-    return render_template_string('''
-    <html><head><title>Manage Bots</title><style>body{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;} .wrap{padding:24px;} .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;} .card{background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(85,255,170,0.2);padding:18px;border-radius:16px;} .top{display:flex;align-items:center;gap:14px;} img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid rgba(85,255,170,0.28);} .name{font-weight:bold;font-size:1.2rem;} .meta{color:#c2d7c9; font-size:0.9rem;} .actions a{display:inline-block;margin-right:8px;margin-top:12px;color:#98ffd7;text-decoration:none;} .back{color:#8ef7c0;text-decoration:none;display:inline-block;margin-bottom:18px;} .brand{font-weight:900;color:#7afec0;letter-spacing:0.12em;}</style></head><body><div class='wrap'><div class='brand'>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲</div><a href='/dashboard' class='back'>← Dashboard</a><div class='grid'>{% for bot in bots %}<div class='card'><div class='top'><img src='{{ bot.profile_image_ref or "https://ui-avatars.com/api/?name=" + bot.display_name + "&background=0d1a14&color=7dffc9&size=128" }}'><div><div class='name'>{{ bot.display_name }}</div><div class='meta'>@{{ bot.username }}</div></div></div><div class='meta'>Bot ID: {{ bot.telegram_bot_id }}</div><div class='meta'>Status: {{ bot.status }}</div><div class='meta'>Worker: {{ bot.worker_assignment }}</div><div class='actions'><a href='/bot/{{ bot.id }}'>View Details</a><a href='/api/bot/{{ bot.id }}/start'>Start</a><a href='/api/bot/{{ bot.id }}/stop'>Stop</a><a href='/api/bot/{{ bot.id }}/restart'>Restart</a></div></div>{% endfor %}</div></div></body></html>
+    return render_template_string(f'''
+    <html><head><title>Manage Bots</title>{SPEED_INSIGHTS_SCRIPT}<style>body{{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;}} .wrap{{padding:24px;}} .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}} .card{{background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(85,255,170,0.2);padding:18px;border-radius:16px;}} .top{{display:flex;align-items:center;gap:14px;}} img{{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid rgba(85,255,170,0.28);}} .name{{font-weight:bold;font-size:1.2rem;}} .meta{{color:#c2d7c9; font-size:0.9rem;}} .actions a{{display:inline-block;margin-right:8px;margin-top:12px;color:#98ffd7;text-decoration:none;}} .back{{color:#8ef7c0;text-decoration:none;display:inline-block;margin-bottom:18px;}} .brand{{font-weight:900;color:#7afec0;letter-spacing:0.12em;}}</style></head><body><div class='wrap'><div class='brand'>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲</div><a href='/dashboard' class='back'>← Dashboard</a><div class='grid'>{{% for bot in bots %}}<div class='card'><div class='top'><img src='{{{{ bot.profile_image_ref or "https://ui-avatars.com/api/?name=" + bot.display_name + "&background=0d1a14&color=7dffc9&size=128" }}}}'><div><div class='name'>{{{{ bot.display_name }}}}</div><div class='meta'>@{{{{ bot.username }}}}</div></div></div><div class='meta'>Bot ID: {{{{ bot.telegram_bot_id }}}}</div><div class='meta'>Status: {{{{ bot.status }}}}</div><div class='meta'>Worker: {{{{ bot.worker_assignment }}}}</div><div class='actions'><a href='/bot/{{{{ bot.id }}}}'>View Details</a><a href='/api/bot/{{{{ bot.id }}}}/start'>Start</a><a href='/api/bot/{{{{ bot.id }}}}/stop'>Stop</a><a href='/api/bot/{{{{ bot.id }}}}/restart'>Restart</a></div></div>{{% endfor %}}</div></div></body></html>
     ''', bots=bot_list)
 
 
@@ -425,8 +437,8 @@ def bot_detail(bot_id):
     if not require_login():
         return redirect("/login")
     bot = Bot.query.get_or_404(bot_id)
-    return render_template_string('''
-    <html><head><title>Bot Details</title><style>body{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;} .card{max-width:700px;margin:30px auto;background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(90,255,175,0.2);padding:20px;border-radius:18px;} img{width:88px;height:88px;border-radius:50%;object-fit:cover;} .label{color:#bfe7d2;} .value{font-weight:bold;}</style></head><body><div class='card'><img src='{{ bot.profile_image_ref or "https://ui-avatars.com/api/?name=" + bot.display_name + "&background=0d1a14&color=7dffc9&size=128" }}'><h2>{{ bot.display_name }}</h2><div class='label'>Username</div><div class='value'>@{{ bot.username }}</div><div class='label'>Telegram ID</div><div class='value'>{{ bot.telegram_bot_id }}</div><div class='label'>Status</div><div class='value'>{{ bot.status }}</div><div class='label'>Worker Assignment</div><div class='value'>{{ bot.worker_assignment }}</div></div></body></html>
+    return render_template_string(f'''
+    <html><head><title>Bot Details</title>{SPEED_INSIGHTS_SCRIPT}<style>body{{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;}} .card{{max-width:700px;margin:30px auto;background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(90,255,175,0.2);padding:20px;border-radius:18px;}} img{{width:88px;height:88px;border-radius:50%;object-fit:cover;}} .label{{color:#bfe7d2;}} .value{{font-weight:bold;}}</style></head><body><div class='card'><img src='{{{{ bot.profile_image_ref or "https://ui-avatars.com/api/?name=" + bot.display_name + "&background=0d1a14&color=7dffc9&size=128" }}}}'><h2>{{{{ bot.display_name }}}}</h2><div class='label'>Username</div><div class='value'>@{{{{ bot.username }}}}</div><div class='label'>Telegram ID</div><div class='value'>{{{{ bot.telegram_bot_id }}}}</div><div class='label'>Status</div><div class='value'>{{{{ bot.status }}}}</div><div class='label'>Worker Assignment</div><div class='value'>{{{{ bot.worker_assignment }}}}</div></div></body></html>
     ''', bot=bot)
 
 
@@ -471,8 +483,8 @@ def upload_script():
         return redirect("/logs")
 
     bots = Bot.query.all()
-    return render_template_string('''
-    <html><head><title>Upload Python Script</title><style>body{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;} .wrap{display:grid;place-items:center;min-height:100vh;} .card{background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(85,255,170,0.2);padding:24px;border-radius:18px;width:min(620px,90vw);box-shadow:0 0 24px rgba(53,255,152,0.1);} input,select,button{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;margin-top:10px;background:#0c120f;color:white;border:1px solid rgba(85,255,170,0.2);} button{background:linear-gradient(135deg,#35f8ab,#1bcf7e);color:#07140d;font-weight:bold;border:none;}</style></head><body><div class='wrap'><div class='card'><h2>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲</h2><h3>Upload Python Script</h3><form method='POST' enctype='multipart/form-data'><select name='bot_id'>{% for bot in bots %}<option value='{{ bot.id }}'>{{ bot.display_name }} (@{{ bot.username }})</option>{% endfor %}</select><input type='file' name='script' accept='.py' required><button type='submit'>Upload</button></form></div></div></body></html>
+    return render_template_string(f'''
+    <html><head><title>Upload Python Script</title>{SPEED_INSIGHTS_SCRIPT}<style>body{{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;}} .wrap{{display:grid;place-items:center;min-height:100vh;}} .card{{background:linear-gradient(180deg,#111915,#0b120f);border:1px solid rgba(85,255,170,0.2);padding:24px;border-radius:18px;width:min(620px,90vw);box-shadow:0 0 24px rgba(53,255,152,0.1);}} input,select,button{{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;margin-top:10px;background:#0c120f;color:white;border:1px solid rgba(85,255,170,0.2);}} button{{background:linear-gradient(135deg,#35f8ab,#1bcf7e);color:#07140d;font-weight:bold;border:none;}}</style></head><body><div class='wrap'><div class='card'><h2>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲</h2><h3>Upload Python Script</h3><form method='POST' enctype='multipart/form-data'><select name='bot_id'>{{% for bot in bots %}}<option value='{{{{ bot.id }}}}'>{{{{ bot.display_name }}}} (@{{{{ bot.username }}}})</option>{{% endfor %}}</select><input type='file' name='script' accept='.py' required><button type='submit'>Upload</button></form></div></div></body></html>
     ''', bots=bots)
 
 
@@ -481,8 +493,8 @@ def logs():
     if not require_login():
         return redirect("/login")
     jobs = Job.query.order_by(Job.created_at.desc()).all()
-    return render_template_string('''
-    <html><head><title>Bot Logs</title><style>body{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;} .wrap{padding:24px;} table{width:100%;border-collapse:collapse;} th,td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;} .empty{padding:20px;background:#111915;border:1px solid rgba(85,255,170,0.2);border-radius:16px;} .error{color:#ff9a9a;} .normal{color:#d9fbe3;}</style></head><body><div class='wrap'><h2>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲 | Logs</h2>{% if not jobs %}<div class='empty'>No logs available yet.</div>{% else %}<table><tr><th>Timestamp</th><th>Bot</th><th>State</th><th>Log</th><th>Exit</th></tr>{% for job in jobs %}<tr><td>{{ job.created_at }}</td><td>{{ job.bot_id }}</td><td>{{ job.process_state }}</td><td class='{% if "error" in job.logs.lower() %}error{% else %}normal{% endif %}'>{{ job.logs[:200] }}</td><td>{{ job.exit_code if job.exit_code is not none else "-" }}</td></tr>{% endfor %}</table>{% endif %}</div></body></html>
+    return render_template_string(f'''
+    <html><head><title>Bot Logs</title>{SPEED_INSIGHTS_SCRIPT}<style>body{{margin:0;background:radial-gradient(circle at top,#0d1713,#060a08 58%);color:#ebfff4;font-family:Arial,sans-serif;}} .wrap{{padding:24px;}} table{{width:100%;border-collapse:collapse;}} th,td{{padding:12px;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;}} .empty{{padding:20px;background:#111915;border:1px solid rgba(85,255,170,0.2);border-radius:16px;}} .error{{color:#ff9a9a;}} .normal{{color:#d9fbe3;}}</style></head><body><div class='wrap'><h2>🐉 ΝᏆΝᎫᎪ ᏴϴᎽ 🐲 | Logs</h2>{{% if not jobs %}}<div class='empty'>No logs available yet.</div>{{% else %}}<table><tr><th>Timestamp</th><th>Bot</th><th>State</th><th>Log</th><th>Exit</th></tr>{{% for job in jobs %}}<tr><td>{{{{ job.created_at }}}}</td><td>{{{{ job.bot_id }}}}</td><td>{{{{ job.process_state }}}}</td><td class='{{% if "error" in job.logs.lower() %}}error{{% else %}}normal{{% endif %}}'>{{{{ job.logs[:200] }}}}</td><td>{{{{ job.exit_code if job.exit_code is not none else "-" }}}}</td></tr>{{% endfor %}}</table>{{% endif %}}</div></body></html>
     ''', jobs=jobs)
 
 
